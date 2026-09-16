@@ -13,6 +13,10 @@ public class Loan {
         this.loanDate = LocalDateTime.now();
     }
 
+    public Book getBook() {
+        return book;
+    }
+
     @Override
     public String toString() {
         return "Loan{" +

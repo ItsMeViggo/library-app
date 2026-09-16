@@ -13,6 +13,8 @@ public class Main {
     static List<Book> books = new ArrayList<>();
     static List<Loan> loans = new ArrayList<>();
 
+    static Borrower activeBorrower;
+
     static void main() {
 
         boolean running = true;
@@ -24,23 +26,22 @@ public class Main {
         books.add(new Book("1984", "87654321", new Author("George Owell")));
         books.add(new Book("The hobbit", "13579245", new Author("JRR Tolkien")));
 
-        loans.add(new Loan(borrowers.getFirst(), books.getFirst()));
-        loans.add(new Loan(borrowers.getLast(), books.getLast()));
 
         login();
 
-        while (running) {
-            showMenu();
+        if (activeBorrower != null) {
+            while (running) {
+                showMenu();
 
-            String choice = IO.readln("What do you want to do? ");
+                String choice = IO.readln("What do you want to do? ");
 
-            switch (choice) {
-                case "1" -> {
-                    for (Book book : books) {
-                        IO.println(book);
-                    }
+                switch (choice) {
+                    case "1" -> showAllBooks();
+                    case "2" -> loanBook();
+                    case "3" -> showAllLoans();
+                    case "4" -> running = false;
+                    default -> IO.println("Invalid input.");
                 }
-                case "2" -> running = false;
             }
         }
 
@@ -63,6 +64,7 @@ public class Main {
 
         if (currentBorrower != null) {
             IO.println("Login Success!");
+            activeBorrower = currentBorrower;
         } else {
             IO.println("Login Failed.");
         }
@@ -71,11 +73,67 @@ public class Main {
     private static void showMenu() {
         String menu = """
                 1. List all books
-                2. Quit menu
+                2. Borrow book
+                3. List all loans
+                4. Quit menu
                 """;
 
         IO.println(menu);
 
 
     }
+
+    private static void showAllBooks() {
+        for (Book book : books) {
+            IO.println(book);
+        }
+    }
+
+    private static void loanBook() {
+        String isbn = IO.readln("ISBN: ");
+        Book searchedBook = null;
+        boolean isBorrowed = false;
+
+        for (Book book : books) {
+            if (book.getIsbn().equals(isbn)) {
+                searchedBook = book;
+                break;
+            }
+        }
+
+        if (searchedBook != null) {
+            IO.println("Book found!");
+        } else {
+            IO.println("Book not found.");
+        }
+
+        checkIfBorrowed(searchedBook, isBorrowed);
+    }
+
+    private static void checkIfBorrowed(Book searchedBook, boolean isBorrowed) {
+        for (Loan loan : loans) {
+            if (searchedBook.equals(loan.getBook())) {
+                isBorrowed = true;
+                break;
+            }
+        }
+
+        if (!isBorrowed) {
+            loans.add(new Loan(activeBorrower, searchedBook));
+            IO.println("Book borrowed!");
+        } else {
+            IO.println("Book is already borrowed..");
+        }
+    }
+
+    private static void showAllLoans() {
+        if (!loans.isEmpty()) {
+            for (Loan loan : loans) {
+                IO.println(loan);
+            }
+        } else {
+            IO.println("List is empty.");
+        }
+    }
+
 }
