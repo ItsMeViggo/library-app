@@ -15,10 +15,10 @@ public class Main {
 
     static Borrower activeBorrower;
 
+    static boolean activeProgram = true;
+    static boolean running = true;
+
     static void main() {
-
-        boolean running = true;
-
         borrowers.add(new Borrower("Anna Svensson", "anna123!", "AnnaS"));
         borrowers.add(new Borrower("Erik Nilsson", "Erik456!", "ErikN"));
 
@@ -27,30 +27,68 @@ public class Main {
         books.add(new Book("The hobbit", "13579245", new Author("JRR Tolkien")));
 
 
-        login();
+        while (activeProgram) {
+            showLoginMenu();
+            String inputChoice = IO.readln("What do you want to do? ").trim();
 
-        if (activeBorrower != null) {
-            while (running) {
-                showMenu();
+            // Handle input
+            switch (inputChoice) {
+                case "1" -> loginHandle();
+                case "2" -> activeProgram = false;
+            }
 
-                String choice = IO.readln("What do you want to do? ");
+            if (activeBorrower != null) {
+                while (running) {
+                    showMenu();
+                    String choice = IO.readln("What do you want to do? ").trim();
 
-                switch (choice) {
-                    case "1" -> showAllBooks();
-                    case "2" -> loanBook();
-                    case "3" -> showAllLoans();
-                    case "4" -> running = false;
-                    default -> IO.println("Invalid input.");
+                    // Handle input
+                    switch (choice) {
+                        case "1" -> showAllBooks();
+                        case "2" -> loanBook();
+                        case "3" -> showAllLoans();
+                        case "4" -> {
+                            activeBorrower = null;
+                            running = false;
+                        }
+                        case "5" -> running = false;
+                        default -> IO.println("Invalid input.");
+                    }
                 }
             }
         }
 
     }
 
+    private static void loginHandle() {
+        running = true;
+        login();
+    }
 
     private static void login() {
-        String username = IO.readln("Enter your username: ");
-        String password = IO.readln("Enter your password: ");
+        String username = null;
+
+        while (true) {
+            try {
+                username = IO.readln("Enter your username: ");
+                checkInput(username);
+                break;
+            } catch (IllegalArgumentException e) {
+                IO.println(e.getMessage());
+            }
+        }
+
+        String password;
+
+        while (true) {
+            try {
+                password = IO.readln("Enter your password: ");
+                checkInput(password);
+                break;
+            } catch (IllegalArgumentException e) {
+                IO.println(e.getMessage());
+            }
+        }
 
         Borrower currentBorrower = null;
 
@@ -75,12 +113,21 @@ public class Main {
                 1. List all books
                 2. Borrow book
                 3. List all loans
-                4. Quit menu
+                4. Logout
+                5. Quit menu
                 """;
 
         IO.println(menu);
 
 
+    }
+
+    private static void showLoginMenu() {
+        String menu = """
+                1. Login
+                2. Quit
+                """;
+        IO.println(menu);
     }
 
     private static void showAllBooks() {
@@ -133,6 +180,12 @@ public class Main {
             }
         } else {
             IO.println("List is empty.");
+        }
+    }
+
+    private static void checkInput(String input) throws IllegalArgumentException {
+        if (input.isBlank()) {
+            throw new IllegalArgumentException("Can not be blank");
         }
     }
 
